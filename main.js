@@ -956,29 +956,115 @@ function startGame(selectedMap = 'school') {
 
 // ИГРОВОЙ ЦИКЛ
 
-function animate() {
-  requestAnimationFrame(animate);
 
-  if (!renderer || !scene || !camera) return;
+function movePlayer(dt) {
+  if (!player || !running) return;
 
-  const dt = Math.min(clock.getDelta(), 0.05);
+  const forward = new THREE.Vector3(
+    -Math.sin(yaw),
+    0,
+    -Math.cos(yaw)
+  );
 
-  if (running && !gameOver) {
-    gameTime += dt;
+  const right = new THREE.Vector3(
+    Math.cos(yaw),
+    0,
+    -Math.sin(yaw)
+  );
 
-    movePlayer(dt);
-    updateMonster(dt);
-    updatePickups(dt);
-    updateLamps(dt);
-    updateFlashlight(dt);
-    updateNoise(dt);
-    updateCamera(dt);
-    checkExit();
-    updateUI();
+  direction.set(0, 0, 0);
+
+  // Клавиатура
+  if (held.KeyW || held.ArrowUp) direction.add(forward);
+  if (held.KeyS || held.ArrowDown) direction.sub(forward);
+  if (held.KeyD || held.ArrowRight) direction.add(right);
+  if (held.KeyA || held.ArrowLeft) direction.sub(right);
+
+  // Джойстик
+  direction.addScaledVector(forward, mobileMoveY);
+  direction.addScaledVector(right, mobileMoveX);
+
+  const moving = direction.lengthSq() > 0.001;
+
+  if (moving) direction.normalize();
+
+  const sprint =
+    (held.ShiftLeft || held.ShiftRight) && !crouching;
+
+  const speed = crouching ? 2.1 : sprint ? 8 : 4.5;
+
+  const targetVelocity = direction.clone().multiplyScalar(speed);
+
+  velocity.x = THREE.MathUtils.damp(
+    velocity.x,
+    targetVelocity.x,
+    12,
+    dt
+  );
+
+  velocity.z = THREE.MathUtils.damp(
+    velocity.z,
+    targetVelocity.z,
+    12,
+    dt
+  );
+
+  const nextX = player.position.x + velocity.x * dt;
+  const nextZ = player.position.z + velocity.z * dt;
+
+  if (!collides(nextX, player.position.z)) {
+    player.position.x = nextX;
+  } else {
+    velocity.x = 0;
   }
 
-  renderer.render(scene, camera);
+  if (!collides(player.position.x, nextZ)) {
+    player.position.z = nextZ;
+  } else {
+    velocity.z = 0;
+  }
+
+  const half = CONFIG[mapType].size / 2 - 2;
+
+  player.position.x = clamp(player.position.x, -half, half);
+  player.position.z = clamp(player.position.z, -half, half);
+
+  if (moving) {
+    const bobSpeed = sprint ? 13 : crouching ? 5 : 8;
+
+    camera.position.y =
+      PLAYER_HEIGHT + Math.sin(gameTime * bobSpeed) * 0.035;
+
+    if (
+      !crouching &&
+      gameTime - stepTime > (sprint ? 0.35 : 0.7)
+    ) {
+      makeNoise(sprint ? 24 : 9);
+      stepTime = gameTime;
+    }
+  } else {
+    camera.position.y = THREE.MathUtils.damp(
+      camera.position.y,
+      PLAYER_HEIGHT,
+      8,
+      dt
+    );
+  }
+
+  inSafeZone = safeZones.some(zone => {
+    return Math.hypot(
+      player.position.x - zone.x,
+      player.position.z - zone.z
+    ) < zone.radius;
+  });
+
+  const safeElement = $('safe');
+
+  if (safeElement) {
+    safeElement.style.display = inSafeZone ? 'block' : 'none';
+  }
 }
+
 
 // ДВИЖЕНИЕ ИГРОКА
 
@@ -1009,6 +1095,8 @@ function movePlayer(dt) {
   direction.addScaledVector(right, mobileMoveX);
 
   const moving = direction.lengthSq() > 0;
+  direction.addScaledVector(forward, mobileMoveY);
+direction.addScaledVector(right, mobileMoveX);
 
   if (moving) direction.normalize();
 
@@ -1666,11 +1754,63 @@ function interact() {
 
 // МОБИЛЬНЫЙ ДЖОЙСТИК ДЛЯ ТЕЛА
 
-const joystick = $('mobileJoystick');
-const knob = $('mobileKnob');
+
+// МОБИЛЬНЫЙ ДЖОЙСТИК — АВТОСОЗДАНИЕ
+
+
 
 let joystickActive = false;
 let joystickPointerId = null;
+
+let joystick = document.getElementById('mobileJoystick');
+let knob = document.getElementById('mobileKnob');
+
+if (!joystick) {
+  joystick = document.createElement('div');
+  joystick.id = 'mobileJoystick';
+  document.body.appendChild(joystick);
+}
+
+if (!knob) {
+  knob = document.createElement('div');
+  knob.id = 'mobileKnob';
+  joystick.appendChild(knob);
+}
+
+// СТИЛИ ДЖОЙСТИКА
+const joystickStyle = document.createElement('style');
+
+joystickStyle.textContent = `
+  #mobileJoystick {
+    position: fixed !important;
+    left: 25px !important;
+    bottom: 30px !important;
+    width: 140px !important;
+    height: 140px !important;
+    border: 3px solid rgba(255,255,255,0.55);
+    border-radius: 50%;
+    background: rgba(20,20,20,0.5);
+    z-index: 999999 !important;
+    display: block !important;
+    touch-action: none !important;
+    user-select: none;
+    pointer-events: auto !important;
+  }
+
+  #mobileKnob {
+    position: absolute;
+    left: 40px;
+    top: 40px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.85);
+    box-shadow: 0 0 15px black;
+    pointer-events: none;
+  }
+`;
+
+document.head.appendChild(joystickStyle);
 
 function resetMobileJoystick() {
   joystickActive = false;
@@ -1685,8 +1825,6 @@ function resetMobileJoystick() {
 }
 
 function updateJoystick(event) {
-  if (!joystick || !knob) return;
-
   const rect = joystick.getBoundingClientRect();
 
   const centerX = rect.left + rect.width / 2;
@@ -1712,33 +1850,35 @@ function updateJoystick(event) {
   if (Math.abs(mobileMoveY) < 0.12) mobileMoveY = 0;
 }
 
-if (joystick && knob) {
-  joystick.addEventListener('pointerdown', event => {
-    if (!running || joystickActive) return;
+joystick.addEventListener('pointerdown', event => {
+  if (!running || joystickActive) return;
 
-    joystickActive = true;
-    joystickPointerId = event.pointerId;
+  event.preventDefault();
 
-    joystick.setPointerCapture(event.pointerId);
-    updateJoystick(event);
-  });
+  joystickActive = true;
+  joystickPointerId = event.pointerId;
 
-  joystick.addEventListener('pointermove', event => {
-    if (!joystickActive) return;
-    if (event.pointerId !== joystickPointerId) return;
+  joystick.setPointerCapture(event.pointerId);
+  updateJoystick(event);
+});
 
-    updateJoystick(event);
-  });
+joystick.addEventListener('pointermove', event => {
+  if (!joystickActive) return;
+  if (event.pointerId !== joystickPointerId) return;
 
-  joystick.addEventListener('pointerup', event => {
-    if (event.pointerId === joystickPointerId) {
-      resetMobileJoystick();
-    }
-  });
+  event.preventDefault();
+  updateJoystick(event);
+});
 
-  joystick.addEventListener('pointercancel', resetMobileJoystick);
-  joystick.addEventListener('lostpointercapture', resetMobileJoystick);
-}
+joystick.addEventListener('pointerup', event => {
+  if (event.pointerId === joystickPointerId) {
+    resetMobileJoystick();
+  }
+});
+
+joystick.addEventListener('pointercancel', resetMobileJoystick);
+joystick.addEventListener('lostpointercapture', resetMobileJoystick);
+
 
 // КНОПКИ
 
