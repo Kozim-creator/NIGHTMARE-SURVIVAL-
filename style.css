@@ -1,0 +1,334 @@
+
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  --red: #b51f27;
+  --dark: #090d10;
+  --panel: rgba(10, 15, 18, 0.94);
+  --border: rgba(180, 190, 195, 0.2);
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+  background: #050708;
+  color: #f2f2f2;
+  font-family: Arial, sans-serif;
+}
+
+#gameCanvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+button {
+  border: 1px solid #555f64;
+  border-radius: 7px;
+  background: #172126;
+  color: white;
+  padding: 10px 16px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: bold;
+  transition: 0.2s;
+}
+
+button:hover {
+  background: #7e2025;
+  border-color: #d34b50;
+  transform: translateY(-2px);
+}
+
+button:active {
+  transform: scale(0.97);
+}
+
+.screen {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  text-align: center;
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.48), rgba(0, 0, 0, 0.88)),
+    radial-gradient(circle, #263238, #050708 75%);
+}
+
+#menuScreen h1 {
+  color: #d82c35;
+  font-size: clamp(42px, 7vw, 76px);
+  letter-spacing: 9px;
+  margin: 0;
+  text-shadow: 0 0 25px #8d0000;
+}
+
+.subtitle {
+  color: #aeb7bb;
+  letter-spacing: 9px;
+  font-size: 13px;
+  margin: 5px 0 25px;
+}
+
+#menuScreen h2 {
+  font-size: 17px;
+  letter-spacing: 3px;
+  margin: 8px 0 15px;
+}
+
+.maps {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.maps button {
+  min-width: 135px;
+  padding: 13px 17px;
+}
+
+.help {
+  color: #a5adaf;
+  font-size: 12px;
+  line-height: 1.8;
+  margin-top: 22px;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Компактный игровой интерфейс */
+
+#hud {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  pointer-events: none;
+}
+
+.stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 12px;
+  padding: 8px;
+  max-width: min(600px, calc(100vw - 24px));
+  background: rgba(5, 9, 11, 0.76);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  backdrop-filter: blur(8px);
+}
+
+.stats span {
+  padding: 7px 9px;
+  border-radius: 5px;
+  background: rgba(35, 45, 49, 0.85);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.stats b {
+  color: #fff;
+}
+
+#message,
+#objective,
+#danger {
+  margin: 5px 12px;
+  padding: 7px 11px;
+  max-width: 320px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.62);
+  font-size: 12px;
+  text-shadow: 0 2px 5px black;
+}
+
+#danger {
+  color: #ff4242;
+  font-weight: bold;
+}
+
+#shopButton,
+#pauseButton {
+  position: fixed;
+  bottom: 16px;
+  z-index: 6;
+  pointer-events: auto;
+  padding: 10px 15px;
+}
+
+#shopButton {
+  left: 14px;
+}
+
+#pauseButton {
+  right: 14px;
+}
+
+/* Магазин и пауза */
+
+.panel {
+  position: fixed;
+  z-index: 20;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(370px, calc(100vw - 30px));
+  max-height: 80vh;
+  overflow-y: auto;
+  padding: 20px;
+  background: var(--panel);
+  border: 1px solid #713035;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 15px 60px #000;
+  backdrop-filter: blur(12px);
+}
+
+.panel h2 {
+  margin: 0 0 12px;
+  color: #e34a50;
+  letter-spacing: 3px;
+  font-size: 21px;
+}
+
+.panel p {
+  color: #bdc5c8;
+  font-size: 13px;
+}
+
+.panel button {
+  width: 100%;
+  margin: 5px 0;
+}
+
+#shopItems {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.shop-item {
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #151e22;
+  text-align: left;
+}
+
+.shop-item h3 {
+  margin: 4px 0;
+  font-size: 14px;
+}
+
+.shop-item p {
+  margin: 4px 0;
+  font-size: 11px;
+}
+
+.shop-icon {
+  font-size: 22px;
+}
+
+/* Прицел и безопасная зона */
+
+#crosshair {
+  position: fixed;
+  z-index: 4;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 19px;
+  font-weight: normal;
+  pointer-events: none;
+  text-shadow: 0 0 5px black;
+}
+
+#safe {
+  position: fixed;
+  z-index: 6;
+  bottom: 65px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 7px 12px;
+  border: 1px solid #2b9c54;
+  border-radius: 7px;
+  background: rgba(0, 30, 10, 0.8);
+  color: #70ff8c;
+  font-size: 12px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* Экран победы и поражения */
+
+#endScreen {
+  background: rgba(5, 0, 0, 0.94);
+}
+
+#endTitle {
+  font-size: clamp(32px, 6vw, 65px);
+  letter-spacing: 5px;
+}
+
+#endDescription {
+  max-width: 400px;
+  color: #c1c1c1;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+#endScreen button {
+  width: min(240px, 80vw);
+  margin: 5px;
+}
+
+/* Маленькие экраны */
+
+@media (max-width: 600px) {
+  .stats {
+    gap: 4px;
+    margin: 7px;
+    padding: 5px;
+  }
+
+  .stats span {
+    font-size: 10px;
+    padding: 6px;
+  }
+
+  .maps {
+    flex-direction: column;
+    width: min(240px, 85vw);
+  }
+
+  .maps button {
+    width: 100%;
+  }
+
+  #message,
+  #objective {
+    font-size: 10px;
+  }
+
+  #shopButton,
+  #pauseButton {
+    bottom: 10px;
+    font-size: 11px;
+  }
+}

@@ -1,0 +1,78 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NIGHTMARE: SURVIVAL</title>
+  <link rel="stylesheet" href="./style.css">
+  <link rel="icon" href="data:,">
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <div id="menuScreen" class="screen">
+    <h1>NIGHTMARE</h1>
+    <p class="subtitle">SURVIVAL</p>
+    <h2>ВЫБЕРИ КАРТУ</h2>
+
+    <div class="maps">
+      <button onclick="startGame('school')">🏫 ШКОЛА</button>
+      <button onclick="startGame('hospital')">🏥 БОЛЬНИЦА</button>
+      <button onclick="startGame('village')">🏚️ ДЕРЕВНЯ</button>
+    </div>
+
+    <p class="help">
+      WASD — движение · SHIFT — бег · C — красться<br>
+      F — фонарик · E — действие · 1/2/3 — предметы
+    </p>
+  </div>
+
+  <div id="hud" style="display:none">
+    <div class="stats">
+      <span>🔑 Ключи: <b id="keys">0/3</b></span>
+      <span>💰 Монеты: <b id="coins">0</b></span>
+      <span>🔋 Батарея: <b id="battery">100</b></span>
+      <span>🧰 Ресурсы: <b id="resources">0</b></span>
+    </div>
+
+    <div id="objective">Найди три ключа и выход!</div>
+    <div id="message"></div>
+    <div id="safe" style="display:none">🟢 БЕЗОПАСНАЯ ЗОНА</div>
+
+    <button id="shopButton">🛒 МАГАЗИН</button>
+    <button id="pauseButton">Ⅱ ПАУЗА</button>
+  </div>
+
+  <div id="shopScreen" class="panel" style="display:none">
+    <h2>МАГАЗИН</h2>
+    <p>Твои монеты: <b id="shopCoins">0</b></p>
+    <div id="shopItems"></div>
+    <button id="closeShopButton">ЗАКРЫТЬ</button>
+  </div>
+
+  <div id="pauseScreen" class="panel" style="display:none">
+    <h2>ПАУЗА</h2>
+    <button id="resumeButton">ПРОДОЛЖИТЬ</button>
+    <button onclick="location.reload()">В ГЛАВНОЕ МЕНЮ</button>
+  </div>
+
+  <div id="endScreen" class="screen" style="display:none">
+    <h1 id="endTitle">ТЫ ПОГИБ</h1>
+    <p id="endDescription"></p>
+    <button id="restartButton">ИГРАТЬ СНОВА</button>
+    <button id="menuButton">ГЛАВНОЕ МЕНЮ</button>
+  </div>
+
+  <div id="crosshair">+</div>
+
+  <script type="module" src="./js/main.js"></script>
+</body>
+</html>
