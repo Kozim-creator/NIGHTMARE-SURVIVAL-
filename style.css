@@ -332,3 +332,93 @@ button:active {
     font-size: 11px;
   }
 }
+/* МОБИЛЬНОЕ УПРАВЛЕНИЕ */
+
+#mobileControls {
+  display: none;
+}
+
+@media (pointer: coarse) {
+  #mobileControls {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 8;
+    pointer-events: none;
+    touch-action: none;
+    user-select: none;
+  }
+
+  #lookArea {
+    position: absolute;
+    top: 15%;
+    right: 0;
+    width: 55%;
+    height: 70%;
+    pointer-events: auto;
+    touch-action: none;
+  }
+
+  #joystick {
+    position: absolute;
+    left: 20px;
+    bottom: 25px;
+    width: 120px;
+    height: 120px;
+    border: 2px solid rgba(255,255,255,.5);
+    border-radius: 50%;
+    background: rgba(20,30,35,.55);
+    pointer-events: auto;
+    touch-action: none;
+  }
+
+  #joystickKnob {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba(210,220,225,.8);
+    border: 2px solid white;
+    transform: translate(-50%,-50%);
+  }
+
+  #mobileButtons {
+    position: absolute;
+    right: 12px;
+    bottom: 18px;
+    display: grid;
+    grid-template-columns: repeat(3, 48px);
+    gap: 7px;
+    pointer-events: auto;
+  }
+
+  #mobileButtons button {
+    width: 48px;
+    height: 48px;
+    padding: 0;
+    font-size: 21px;
+    border-radius: 50%;
+    background: rgba(15,25,30,.85);
+    border: 1px solid #9ba5aa;
+    touch-action: none;
+  }
+
+  #mobileButtons button:active {
+    background: #8b2027;
+  }
+
+  #shopButton,
+  #pauseButton {
+    bottom: 175px;
+  }
+
+  #safe {
+    bottom: 155px;
+  }
+
+  #crosshair {
+    display: none;
+  }
+}
